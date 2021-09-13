@@ -91,6 +91,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         )
 
     # update/train this policy
+    # overridden by subclasses
     def update(self, observations, actions, **kwargs):
         raise NotImplementedError
 
@@ -100,7 +101,13 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor) -> Any:
-        raise NotImplementedError
+        if self.discrete:
+            return distributions.Categorical(logits=self.logits_na(observation))
+        else:
+            return distributions.Normal(
+                self.mean_net(observation),
+                torch.exp(self.logstd)[np.newaxis]
+            )
 
 
 #####################################################
@@ -119,10 +126,12 @@ class MLPPolicySL(MLPPolicy):
         actions_dtype = torch.int32 if self.discrete else torch.float32
 
         self.optimizer.zero_grad()
-        obs = torch.tensor(obs, device=ptu.device, dtype=torch.float32)
-        acs = torch.tensor(acs, device=ptu.device, dtype=actions_dtype)
-        actions_distribution = self(obs)
-        loss = -actions_distribution.log_prob(acs).mean()
+        observations = torch.tensor(
+            observations, device=ptu.device, dtype=torch.float32
+        )
+        actions = torch.tensor(actions, device=ptu.device, dtype=actions_dtype)
+        actions_distribution = self(observations)
+        loss = -actions_distribution.log_prob(actions).mean()
         loss.backward()
         self.optimizer.step()
 
