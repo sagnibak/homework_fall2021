@@ -5,7 +5,7 @@
 To replicate my BC result on Ant, please run:
 
 ```sh
-python cs285/scripts/run_hw1.py \                                                                                    (env285)
+python cs285/scripts/run_hw1.py \
     --ep_len 1000 \
     --eval_batch_size 5000 \
     --expert_policy_file cs285/policies/experts/Ant.pkl \
@@ -19,7 +19,7 @@ python cs285/scripts/run_hw1.py \                                               
 To replicate my BC result on Humanoid, please run:
 
 ```sh
-python cs285/scripts/run_hw1.py \                                                                                   (env285)
+python cs285/scripts/run_hw1.py \
     --ep_len 1000 \
     --eval_batch_size 5000 \
     --expert_policy_file cs285/policies/experts/Humanoid.pkl \
@@ -30,12 +30,19 @@ python cs285/scripts/run_hw1.py \                                               
     --video_log_freq -1
 ```
 
+In order to replicate my experiments for 1.3, please run the
+following:
+
+```sh
+python cs285/scripts/run_1_3.py
+```
+
 ## Replication of DAgger
 
 To replicate my Dagger result on Ant, please run:
 
 ```sh
-python cs285/scripts/run_hw1.py \                                                                                (env285)7.6m
+python cs285/scripts/run_hw1.py \
     --ep_len 3000 \
     --eval_batch_size 15000 \
     --expert_policy_file cs285/policies/experts/Ant.pkl \
@@ -50,6 +57,17 @@ python cs285/scripts/run_hw1.py \                                               
 To replicate my DAgger result on Humanoid, please run:
 
 ```sh
+python cs285/scripts/run_hw1.py \
+    --ep_len 10000 \
+    --eval_batch_size 50000 \
+    --expert_policy_file cs285/policies/experts/Humanoid.pkl \
+    --env_name Humanoid-v2 --exp_name dagger_humanoid --n_iter 10 \
+    --expert_data cs285/expert_data/expert_data_Humanoid-v2.pkl \
+    --do_dagger \
+    --n_layers 2 --size 512 \
+    --train_batch_size 2000 \
+    --learning_rate 5e-1 \
+    --video_log_freq -1
 ```
 
 ## Setup
