@@ -104,6 +104,7 @@ class RL_Trainer(object):
                 self.log_metrics = False
 
             # collect trajectories, to be used for training
+            # import pdb; pdb.set_trace()
             training_returns = self.collect_training_trajectories(
                 itr,
                 initial_expertdata,
@@ -172,14 +173,12 @@ class RL_Trainer(object):
                 loaded_paths = pickle.load(f)
             return loaded_paths, 0, None
         
-        paths = utils.sample_n_trajectories(
+        paths, envsteps_this_batch = utils.sample_trajectories(
             self.env,
             collect_policy,
-            batch_size // self.params["ep_len"],
+            self.params["ep_len"] // batch_size,
             max_path_length=self.params["ep_len"],
         )
-
-        envsteps_this_batch = sum(path["observation"].shape[0] for path in paths)
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -188,6 +187,7 @@ class RL_Trainer(object):
             print('\nCollecting train rollouts to be used for saving videos...')
             ## DONE look in utils and implement sample_n_trajectories
             train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
+            # train_video_paths = [path for paths, _ in train_video_paths for path in paths]
 
         return paths, envsteps_this_batch, train_video_paths
 
