@@ -124,6 +124,7 @@ class PGAgent(BaseAgent):
                         ## 0 otherwise.
                     ## HINT 2: self.gae_lambda is the lambda value in the
                         ## GAE formula
+                    pass
 
                 # remove dummy advantage
                 advantages = advantages[:-1]
