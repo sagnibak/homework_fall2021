@@ -153,7 +153,9 @@ class MLPPolicyPG(MLPPolicy):
 
         log_probs = self.forward(observations).log_prob(actions)
         if not self.discrete:
-            log_probs = torch.sum(log_probs, dim=1)
+            # log_probs = torch.sum(log_probs, dim=1)
+            print(log_probs.size())
+            log_probs = log_probs.sum()
         loss = -torch.sum(log_probs * advantages)
 
         self.optimizer.zero_grad()

@@ -184,7 +184,7 @@ class PGAgent(BaseAgent):
             # using a for loop is also fine
         T = len(rewards)
         gammas = np.array([self.gamma ** t for t in reversed(range(T))])
-        reversed_rewards = reversed(rewards)
+        reversed_rewards = list(reversed(rewards))
         return [
             np.sum(gammas[:T - t] * reversed_rewards[t:])
             for t in range(T)

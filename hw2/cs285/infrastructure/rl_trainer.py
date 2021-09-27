@@ -194,7 +194,7 @@ class RL_Trainer(object):
             path, envsteps = utils.sample_trajectories(
                 self.env,
                 collect_policy,
-                (batch_size - envsteps_this_batch) // self.params["ep_len"],
+                max(1, (batch_size - envsteps_this_batch) // self.params["ep_len"]),
                 max_path_length=self.params["ep_len"],
             )
             paths.extend(path)
