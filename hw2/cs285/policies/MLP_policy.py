@@ -155,7 +155,8 @@ class MLPPolicyPG(MLPPolicy):
         if not self.discrete:
             # log_probs = torch.sum(log_probs, dim=1)
             print(log_probs.size())
-            log_probs = log_probs.sum()
+            print(advantages.size())
+            # log_probs = log_probs.sum()
         loss = -torch.sum(log_probs * advantages)
 
         self.optimizer.zero_grad()
