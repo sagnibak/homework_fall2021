@@ -115,16 +115,27 @@ class PGAgent(BaseAgent):
                 ## estimates, with dummy T+1 value for simpler recursive calculation
                 batch_size = obs.shape[0]
                 advantages = np.zeros(batch_size + 1)
+                # import pdb; pdb.set_trace()
 
+                last_value = values[-1]
                 for i in reversed(range(batch_size)):
-                    ## TODO: recursively compute advantage estimates starting from
+                    ## DONE: recursively compute advantage estimates starting from
                         ## timestep T.
                     ## HINT 1: use terminals to handle edge cases. terminals[i]
                         ## is 1 if the state is the last in its trajectory, and
                         ## 0 otherwise.
                     ## HINT 2: self.gae_lambda is the lambda value in the
                         ## GAE formula
-                    pass
+                    if terminals[i] == 1:
+                        last_value = 0
+                        current_advantage = 0
+                    else:
+                        last_value = values[i + 1]
+                    delta = rews[i] + (self.gamma * last_value) - values[i]
+                    current_advantage = (
+                        delta + self.gamma * self.gae_lambda * current_advantage
+                    )
+                    advantages[i] = current_advantage
 
                 # remove dummy advantage
                 advantages = advantages[:-1]
