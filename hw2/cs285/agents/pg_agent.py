@@ -102,9 +102,7 @@ class PGAgent(BaseAgent):
             ## DONE: values were trained with standardized q_values, so ensure
                 ## that the predictions have the same mean and standard deviation as
                 ## the current batch of q_values
-            baseline = self.actor.run_baseline_prediction(obs)
-            baseline = (q_values.std() * baseline) + q_values.mean()
-            advantages = q_values - baseline
+            values = (q_values.std() * values_unnormalized) + q_values.mean()
 
             if self.gae_lambda is not None:
                 ## append a dummy T+1 value for simpler recursive calculation
@@ -132,8 +130,8 @@ class PGAgent(BaseAgent):
                 advantages = advantages[:-1]
 
             else:
-                ## TODO: compute advantage estimates using q_values, and values as baselines
-                advantages = TODO
+                ## DONE: compute advantage estimates using q_values, and values as baselines
+                advantages = q_values - values
 
         # Else, just set the advantage to [Q]
         else:
