@@ -99,10 +99,12 @@ class PGAgent(BaseAgent):
             ## ensure that the value predictions and q_values have the same dimensionality
             ## to prevent silent broadcasting errors
             assert values_unnormalized.ndim == q_values.ndim
-            ## TODO: values were trained with standardized q_values, so ensure
+            ## DONE: values were trained with standardized q_values, so ensure
                 ## that the predictions have the same mean and standard deviation as
                 ## the current batch of q_values
-            values = TODO
+            baseline = self.actor.run_baseline_prediction(obs)
+            baseline = (q_values.std() * baseline) + q_values.mean()
+            advantages = q_values - baseline
 
             if self.gae_lambda is not None:
                 ## append a dummy T+1 value for simpler recursive calculation
