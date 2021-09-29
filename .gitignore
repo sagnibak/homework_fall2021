@@ -4,3 +4,4 @@
 **/*.egg-info
 **/env285
 **/data_ignore
+**/ignore
