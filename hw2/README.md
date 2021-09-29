@@ -1,3 +1,16 @@
+## Reproducing Results
+
+In order to reproduce the results of my experiments, please run the
+following:
+```sh
+bash cs285/scripts/exp1.sh
+python cs285/scripts/exp2.py
+bash cs285/scripts/exp3.sh
+python cs285/scripts/exp4.py
+python cs285/scripts/exp4_2.py
+python cs285/scripts/exp5.py
+```
+
 ## Setup
 
 You can run this code on your own machine or on Google Colab.
