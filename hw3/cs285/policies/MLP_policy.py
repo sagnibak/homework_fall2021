@@ -116,12 +116,12 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             action_distribution = distributions.Categorical(logits=logits)
         else:
             batch_mean = self.mean_net(observation)
-            scale_tril = torch.diag(torch.exp(self.logstd))
+            scale = torch.diag(torch.exp(self.logstd))
             batch_dim = batch_mean.shape[0]
-            batch_scale_tril = scale_tril.repeat(batch_dim, 1, 1)
+            batch_scale = scale.repeat(batch_dim, 1, 1)
             action_distribution = distributions.MultivariateNormal(
                 batch_mean,
-                scale_tril=batch_scale_tril,
+                scale_tril=batch_scale,
             )
         return action_distribution
 
