@@ -36,13 +36,13 @@ def register_custom_envs():
         )
 
 
-def get_env_kwargs(env_name):
+def get_env_kwargs(env_name, lr=None):
     if env_name in ['MsPacman-v0', 'PongNoFrameskip-v4']:
         kwargs = {
             'learning_starts': 50000,
             'target_update_freq': 10000,
             'replay_buffer_size': int(1e6),
-            'num_timesteps': int(2e8),
+            'num_timesteps': int(1e6),
             'q_func': create_atari_q_network,
             'learning_freq': 4,
             'grad_norm_clipping': 10,
@@ -50,6 +50,7 @@ def get_env_kwargs(env_name):
             'env_wrappers': wrap_deepmind,
             'frame_history_len': 4,
             'gamma': 0.99,
+            'lr': lr,
         }
         kwargs['optimizer_spec'] = atari_optimizer(
             kwargs['num_timesteps'],
@@ -125,7 +126,8 @@ def atari_exploration_schedule(num_timesteps):
     return PiecewiseSchedule(
         [
             (0, 1.0),
-            (1e6, 0.1),
+            # (1e6, 0.1),
+            (1e5, 0.1),
             (num_timesteps / 8, 0.01),
         ], outside_value=0.01
     )
@@ -142,6 +144,9 @@ def atari_ram_exploration_schedule(num_timesteps):
 
 
 def atari_optimizer(num_timesteps, lr=None):
+    if lr is None:
+        lr = 1e-3
+
     lr_schedule = PiecewiseSchedule(
         [
             (0, 1e-1),
@@ -151,10 +156,11 @@ def atari_optimizer(num_timesteps, lr=None):
         outside_value=5e-2,
     )
 
+    print(f"Making an optimizer with lr={lr}")
     return OptimizerSpec(
         constructor=optim.Adam,
         optim_kwargs=dict(
-            lr=1e-3,
+            lr=lr,
             eps=1e-4
         ),
         learning_rate_schedule=lambda t: lr_schedule.value(t),

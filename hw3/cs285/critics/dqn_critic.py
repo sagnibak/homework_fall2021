@@ -10,6 +10,7 @@ from cs285.infrastructure import pytorch_util as ptu
 class DQNCritic(BaseCritic):
 
     def __init__(self, hparams, optimizer_spec, **kwargs):
+        # import pdb; pdb.set_trace()
         super().__init__(**kwargs)
         self.env_name = hparams['env_name']
         self.ob_dim = hparams['ob_dim']
