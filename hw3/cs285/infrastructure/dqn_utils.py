@@ -51,7 +51,10 @@ def get_env_kwargs(env_name):
             'frame_history_len': 4,
             'gamma': 0.99,
         }
-        kwargs['optimizer_spec'] = atari_optimizer(kwargs['num_timesteps'])
+        kwargs['optimizer_spec'] = atari_optimizer(
+            kwargs['num_timesteps'],
+            lr=kwargs.get("lr"),
+        )
         kwargs['exploration_schedule'] = atari_exploration_schedule(kwargs['num_timesteps'])
 
     elif env_name == 'LunarLander-v3':
@@ -138,7 +141,7 @@ def atari_ram_exploration_schedule(num_timesteps):
     )
 
 
-def atari_optimizer(num_timesteps):
+def atari_optimizer(num_timesteps, lr=None):
     lr_schedule = PiecewiseSchedule(
         [
             (0, 1e-1),
