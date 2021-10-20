@@ -132,5 +132,28 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
 class MLPPolicyAC(MLPPolicy):
     def update(self, observations, actions, adv_n=None):
-        # TODO: update the policy and return the loss
-        return loss.item()
+        observations = ptu.from_numpy(observations)
+        actions = ptu.from_numpy(actions)
+        advantages = (
+            ptu.from_numpy(adv_n)
+            if adv_n is not None
+            else ptu.from_numpy(np.array([0]))
+        )
+
+        log_probs = self.forward(observations).log_prob(actions)
+
+        if not self.discrete:
+            print(log_probs.size())
+            print(advantages.size())
+            # log_probs = torch.sum(log_probs, dim=1)
+            # log_probs = log_probs.sum()
+        loss = -torch.sum(log_probs * advantages)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        train_log = {
+            'Training Loss': ptu.to_numpy(loss),
+        }
+        return train_log
