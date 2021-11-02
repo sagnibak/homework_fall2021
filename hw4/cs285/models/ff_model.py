@@ -116,7 +116,7 @@ class FFModel(nn.Module, BaseModel):
             acs_std=ptu.from_numpy(data_statistics["acs_std"]),
             delta_mean=ptu.from_numpy(data_statistics["delta_mean"]),
             delta_std=ptu.from_numpy(data_statistics["delta_std"]),
-        )[0]
+        )[0].cpu().detach().numpy()
         return prediction
 
     def update(self, observations, actions, next_observations, data_statistics):

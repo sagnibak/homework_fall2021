@@ -2,8 +2,6 @@ import numpy as np
 import time
 import copy
 
-from cs285.infrastructure.pytorch_util import to_numpy
-
 ############################################
 ############################################
 
@@ -21,7 +19,6 @@ def calculate_mean_prediction_error(env, action_sequence, models, data_statistic
         pred_states.append(ob)
         action = np.expand_dims(ac,0)
         ob = model.get_prediction(ob, action, data_statistics)
-        ob = to_numpy(ob)
     pred_states = np.squeeze(pred_states)
 
     # mpe

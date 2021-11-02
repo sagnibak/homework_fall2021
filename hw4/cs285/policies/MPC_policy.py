@@ -149,9 +149,10 @@ class MPCPolicy(BasePolicy):
         sum_of_rewards = np.zeros((N,))
         obs_pred = np.repeat(obs.reshape(1, -1), N, axis=0)
         for i in range(H):
+            # import pdb; pdb.set_trace()
             sum_of_rewards += self.env.get_reward(
                 obs_pred, candidate_action_sequences[:, i],
-            )
+            )[0]
             if i < H - 1:
                  obs_pred = model.get_prediction(
                      obs_pred,
