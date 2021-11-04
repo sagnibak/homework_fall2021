@@ -90,14 +90,18 @@ class MPCPolicy(BasePolicy):
         #
         # Then, return the mean predictions across all ensembles.
         # Hint: the return value should be an array of shape (N,)
-        mean_preds = np.empty((self.N,))
+        mean_preds = np.full((self.N,), fill_value=-100000000000.)
         for i, model in enumerate(self.dyn_models):
-            mean_preds[i] = np.mean(self.calculate_sum_of_rewards(
+            # import pdb; pdb.set_trace()
+            mean_pred = np.mean(self.calculate_sum_of_rewards(
                 obs,
                 candidate_action_sequences,
                 model,
             ))
+            assert not np.isnan(mean_pred)
+            mean_preds[i] = mean_pred
 
+        assert not any(np.isnan(mean_preds))
         return mean_preds
 
     def get_action(self, obs):
@@ -116,7 +120,9 @@ class MPCPolicy(BasePolicy):
 
             # pick the action sequence and return the 1st element of
             # that sequence
+            # import pdb; pdb.set_trace()
             best_seq_idx = predicted_rewards.argmax()
+            assert not np.isnan(predicted_rewards[best_seq_idx])
             best_action_sequence = candidate_action_sequences[best_seq_idx]
             action_to_take = best_action_sequence[0]
             return action_to_take[None]  # Unsqueeze the first index
@@ -159,4 +165,5 @@ class MPCPolicy(BasePolicy):
                      candidate_action_sequences[:, i],
                      self.data_statistics,
                  )
+        assert not any(np.isnan(sum_of_rewards))
         return sum_of_rewards
