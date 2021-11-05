@@ -90,16 +90,16 @@ class MPCPolicy(BasePolicy):
         #
         # Then, return the mean predictions across all ensembles.
         # Hint: the return value should be an array of shape (N,)
-        mean_preds = np.full((self.N,), fill_value=-100000000000.)
+        # import pdb; pdb.set_trace()
+        mean_preds = np.zeros((self.N,))
+        n_models = len(self.dyn_models)
         for i, model in enumerate(self.dyn_models):
             # import pdb; pdb.set_trace()
-            mean_pred = np.mean(self.calculate_sum_of_rewards(
+            mean_preds += self.calculate_sum_of_rewards(
                 obs,
                 candidate_action_sequences,
                 model,
-            ))
-            assert not np.isnan(mean_pred)
-            mean_preds[i] = mean_pred
+            ) / n_models
 
         assert not any(np.isnan(mean_preds))
         return mean_preds
@@ -153,12 +153,15 @@ class MPCPolicy(BasePolicy):
         #       action sequence.
         N, H, D_action = candidate_action_sequences.shape
         sum_of_rewards = np.zeros((N,))
-        obs_pred = np.repeat(obs.reshape(1, -1), N, axis=0)
+        # obs_pred = np.repeat(obs.reshape(1, -1), N, axis=0)
+        obs_pred = np.tile(obs[None, :], (N, 1))
         for i in range(H):
             # import pdb; pdb.set_trace()
-            sum_of_rewards += self.env.get_reward(
+            rew = self.env.get_reward(
                 obs_pred, candidate_action_sequences[:, i],
             )[0]
+            sum_of_rewards += rew
+
             if i < H - 1:
                  obs_pred = model.get_prediction(
                      obs_pred,
