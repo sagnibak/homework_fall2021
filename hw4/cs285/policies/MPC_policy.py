@@ -65,7 +65,13 @@ class MPCPolicy(BasePolicy):
             # Begin with randomly selected actions, then refine the sampling distribution
             # iteratively as described in Section 3.3, "Iterative Random-Shooting with Refinement" of
             # https://arxiv.org/pdf/1909.11652.pdf
-            for i in range(self.cem_iterations):
+            if obs is None:
+                raise ValueError("`obs` cannot be `None` for CEM.")
+
+            action_sequences = self.sample_action_sequences(
+                num_sequences, horizon, None,
+            )
+            for t in range(self.cem_iterations):
                 # - Sample candidate sequences from a Gaussian with the current
                 #   elite mean and variance
                 #     (Hint: remember that for the first iteration, we instead sample
@@ -74,11 +80,24 @@ class MPCPolicy(BasePolicy):
                 #     (Hint: what existing function can we use to compute rewards for
                 #      our candidate sequences in order to rank them?)
                 # - Update the elite mean and variance
-                pass
+                pred_rewards = self.evaluate_candidate_sequences(
+                    action_sequences, obs,
+                )
+
+                elite_idxs = pred_rewards.argsort()[-self.cem_num_elites:]
+                elites = action_sequences[elite_idxs].copy()
+                mu_elite = np.mean(elites, axis=0)
+                sig_elite = np.std(elites, axis=0)
+
+                action_sequences = np.random.normal(
+                    loc=mu_elite,
+                    scale=sig_elite,
+                    size=(num_sequences, horizon, self.ac_dim),
+                )
 
             # TODO(Q5): Set `cem_action` to the appropriate action sequence chosen by CEM.
             # The shape should be (horizon, self.ac_dim)
-            cem_action = None
+            cem_action = elites[-1]
 
             return cem_action[None]
         else:
