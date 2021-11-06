@@ -1,3 +1,14 @@
+## How to Reproduce Results
+
+Please run the following commands to run all the experiments:
+```bash
+cs285/scripts/run_q1.sh
+cs285/scripts/run_q2.sh
+cs285/scripts/run_q3.sh
+cs285/scripts/run_q4.sh
+cs285/scripts/run_q5.sh
+```
+
 ## Setup
 
 You can run this code on your own machine or on Google Colab. 
