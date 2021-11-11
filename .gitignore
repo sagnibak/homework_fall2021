@@ -3,5 +3,6 @@
 *~
 **/*.egg-info
 **/env285
+**/reptile285
 **/data_ignore
 **/ignore
