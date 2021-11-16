@@ -96,7 +96,7 @@ class CQLCritic(BaseCritic):
         q_t_logsumexp = qa_t_values.logsumexp(dim=1)
         cql_loss = (q_t_logsumexp - q_t_values).mean()
 
-        loss = self.cql_alpha * cql_loss
+        loss = loss + self.cql_alpha * cql_loss
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
