@@ -30,7 +30,7 @@ class AWACAgent(DQNAgent):
         self.exploit_weight_schedule = agent_params['exploit_weight_schedule']
         
         self.use_boltzmann = agent_params['use_boltzmann']
-        self.actor = ArgMaxPolicy(self.exploitation_critic)
+        self.actor = ArgMaxPolicy(self.exploration_critic)
         self.eval_policy = self.awac_actor = MLPPolicyAWAC(
             self.agent_params['ac_dim'],
             self.agent_params['ob_dim'],
@@ -49,14 +49,20 @@ class AWACAgent(DQNAgent):
         self.normalize_rnd = normalize_rnd
         self.rnd_gamma = rnd_gamma
 
-    def get_qvals(self, critic, obs, action):
+    def get_qvals(self, critic, obs):
         # get q-value for a given critic, obs, and action
+        q_value = critic.q_net(obs)
         return q_value
 
     def estimate_advantage(self, ob_no, ac_na, re_n, next_ob_no, terminal_n, n_actions=10):
-        # TODO convert to torch tensors
+        # DONE convert to torch tensors
+        ob_no = ptu.from_numpy(ob_no)
+        # ac_na = ptu.from_numpy(ac_na)
+        re_n = ptu.from_numpy(re_n)
+        next_ob_no = ptu.from_numpy(next_ob_no)
+        terminal_n = ptu.from_numpy(terminal_n).bool()
 
-        vals = []
+        # vals = []
         # TODO Calculate Value Function Estimate given current observation
         # You may find it helpful to utilze get_qvals defined above
         dist = None
@@ -64,14 +70,16 @@ class AWACAgent(DQNAgent):
             for i in range(self.agent_params['ac_dim']):
                 pass
         else:
+            raise NotImplementedError()
             for _ in range(n_actions):
                 pass
-        v_pi = None
+        # DONE Calculate Q-Values
+        # import pdb; pdb.set_trace()
+        q_vals = self.get_qvals(self.exploitation_critic, ob_no)
+        v_pi = q_vals.mean(dim=1).unsqueeze(1)
 
-        # TODO Calculate Q-Values
-        q_vals = None
-        # TODO Calculate the Advantage        
-        return None
+        # DONE Calculate the Advantage        
+        return (q_vals - v_pi).detach().cpu().numpy()
 
     def train(self, ob_no, ac_na, re_n, next_ob_no, terminal_n):
         log = {}
@@ -84,36 +92,72 @@ class AWACAgent(DQNAgent):
                 and self.t % self.learning_freq == 0
                 and self.replay_buffer.can_sample(self.batch_size)
         ):
-            # TODO: Get Reward Weights
+            # DONE: Get Reward Weights
             # Get the current explore reward weight and exploit reward weight
+            explore_weight = self.explore_weight_schedule.value(self.t)
+            exploit_weight = self.exploit_weight_schedule.value(self.t)
 
-            # TODO: Run Exploration Model #
+            # DONE: Run Exploration Model #
             # Evaluate the exploration model on s' to get the exploration bonus
             # HINT: Normalize the exploration bonus, as RND values vary highly in magnitudeelse:
+            expl_bonus = self.exploration_model.forward_np(next_ob_no)
+            expl_bonus = (
+                (expl_bonus - expl_bonus.mean()) / (expl_bonus.std() + 1e-8)
+            )
 
-            # TODO: Reward Calculations #
+            # DONE: Reward Calculations #
             # Calculate mixed rewards, which will be passed into the exploration critic
             # HINT: See doc for definition of mixed_reward
+            mixed_reward = explore_weight * expl_bonus + exploit_weight * re_n
 
-            # TODO: Calculate the environment reward
+            # DONE: Calculate the environment reward
             # HINT: For part 1, env_reward is just 're_n'
             #       After this, env_reward is 're_n' shifted by self.exploit_rew_shift,
             #       and scaled by self.exploit_rew_scale
+            env_reward = self.exploit_rew_scale * (re_n + self.exploit_rew_shift)
 
-            # TODO: Update Critics And Exploration Model #
+            # DONE: Update Critics And Exploration Model #
             # 1): Update the exploration model (based off s')
             # 2): Update the exploration critic (based off mixed_reward)
             # 3): Update the exploitation critic (based off env_reward)
+            expl_model_loss = self.exploration_model.update(next_ob_no)
+            exploration_critic_loss = self.exploration_critic.update(
+                ob_no=ob_no,
+                ac_na=ac_na,
+                next_ob_no=next_ob_no,
+                reward_n=mixed_reward,
+                terminal_n=terminal_n,
+            )
+            exploitation_critic_loss = self.exploitation_critic.update(
+                ob_no=ob_no,
+                ac_na=ac_na,
+                next_ob_no=next_ob_no,
+                reward_n=env_reward,
+                terminal_n=terminal_n,
+            )
 
-
-            # TODO: update actor
+            # DONE: update actor
             # 1): Estimate the advantage
             # 2): Calculate the awac actor loss
+            adv_n = self.estimate_advantage(
+                ob_no=ob_no,
+                ac_na=ac_na,
+                re_n=re_n,
+                next_ob_no=next_ob_no,
+                terminal_n=terminal_n,
+                n_actions=self.num_actions,
+            )
+            actor_loss = self.awac_actor.update(
+                observations=ob_no,
+                actions=ac_na,
+                adv_n=adv_n,
+            )
 
-            # TODO: Update Target Networks #
+            # DONE: Update Target Networks #
             if self.num_param_updates % self.target_update_freq == 0:
                 #  Update the exploitation and exploration target networks
-                pass
+                self.exploration_critic.update_target_network()
+                self.exploitation_critic.update_target_network()
 
             # Logging #
             log['Exploration Critic Loss'] = exploration_critic_loss['Training Loss']
@@ -121,7 +165,7 @@ class AWACAgent(DQNAgent):
             log['Exploration Model Loss'] = expl_model_loss
 
             # Uncomment these lines after completing awac
-            # log['Actor Loss'] = actor_loss
+            log['Actor Loss'] = actor_loss
 
             self.num_param_updates += 1
 
