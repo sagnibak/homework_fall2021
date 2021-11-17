@@ -161,7 +161,7 @@ class MLPPolicyAWAC(MLPPolicy):
     
     def update(self, observations, actions, adv_n=None):
         if adv_n is None:
-            assert False
+            assert False, "AWAC needs *A*dvantages yk :'D"
         if isinstance(observations, np.ndarray):
             observations = ptu.from_numpy(observations)
         if isinstance(actions, np.ndarray):
@@ -170,6 +170,8 @@ class MLPPolicyAWAC(MLPPolicy):
             adv_n = ptu.from_numpy(adv_n)
 
         # TODO update the policy network utilizing AWAC update
+        import pdb; pdb.set_trace()
+        log_probs = self.forward(observations).log_prob(actions)
 
         actor_loss = None
         
