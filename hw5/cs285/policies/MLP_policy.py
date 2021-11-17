@@ -170,8 +170,8 @@ class MLPPolicyAWAC(MLPPolicy):
             adv_n = ptu.from_numpy(adv_n)
 
         # DONE update the policy network utilizing AWAC update
-        import pdb; pdb.set_trace()
-        log_probs = self.forward(observations).log_prob(actions)
+        # import pdb; pdb.set_trace()
+        log_probs = self.forward(observations).log_prob(actions).unsqueeze(1)
 
         actor_loss = -torch.mean(
             log_probs
